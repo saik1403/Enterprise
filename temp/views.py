@@ -1,5 +1,6 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 
 # Create your views here.
 def tempFirstRender(request):
-    return render('Hello from temp')
+    return HttpResponse("At Temp Root")
