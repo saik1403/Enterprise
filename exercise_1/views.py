@@ -1,7 +1,19 @@
+from rest_framework import generics, pagination
+from .models import User
+from .serializers import UserSerializer
 
-from django.shortcuts import render
-from django.http import HttpResponse
+class UserCursorPagination(pagination.CursorPagination):
+    page_size = 10
+    ordering = 'id'
 
-# Create your views here.
-def exercise1():
-    return HttpResponse("At Temp Root")
+class UserListCreateAPIView(generics.ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = UserCursorPagination
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+class UserRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
