@@ -93,7 +93,7 @@ DATABASES = {
     # }
      'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Enterprise',
+        'NAME': 'FreshDB',
         'USER': 'postgres',
         'PASSWORD': 'Test@123',
         'HOST': 'localhost',
@@ -142,3 +142,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#specifiying aauth user
+AUTH_USER_MODEL = 'exercise_1.MyUser'
