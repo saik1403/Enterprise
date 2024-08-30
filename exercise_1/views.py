@@ -1,7 +1,21 @@
+# views.py
+from rest_framework import generics
+from rest_framework.pagination import CursorPagination
+from exercise_1.models import MyUser
+from .serializers import UserSerializer
 
-from django.shortcuts import render
-from django.http import HttpResponse
+# Custom Cursor Pagination class
+class UserCursorPagination(CursorPagination):
+    page_size = 10
+    ordering = 'date_joined'  # Cursor pagination requires an ordering field
 
-# Create your views here.
-def exercise1():
-    return HttpResponse("At Temp Root")
+# List/Create View
+class UserListCreateView(generics.ListCreateAPIView):
+    queryset = MyUser.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = UserCursorPagination
+
+# Retrieve/Update/Destroy View
+class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = MyUser.objects.all()
+    serializer_class = UserSerializer
