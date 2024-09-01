@@ -1,7 +1,7 @@
 # urls.py
 from django.urls import path
 from .views import (
-    SigninView, SignoutView, 
+    SignInView, RefreshTokenView,SignOutView, 
     UserCreateView, UserListView, UserRetrieveUpdateDestroyView,
     CountryListCreateView, CountryRetrieveUpdateDestroyView,
     StateListCreateView, StateRetrieveUpdateDestroyView,
@@ -9,8 +9,9 @@ from .views import (
 )
 
 urlpatterns = [
-    path('signin/', SigninView.as_view(), name='signin'),
-    path('signout/', SignoutView.as_view(), name='signout'),
+    path('signin/', SignInView.as_view(), name='signin'),
+    path('refresh_token/', RefreshTokenView.as_view(), name='token_refresh'),
+    path('signout/', SignOutView.as_view(), name='signout'),
     path('users/', UserListView.as_view(), name='user-list'),
     path('users/create/', UserCreateView.as_view(), name='user-create'),
     path('users/<int:pk>/', UserRetrieveUpdateDestroyView.as_view(), name='user-detail'),

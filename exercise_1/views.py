@@ -9,23 +9,49 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import logout
 
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.permissions import AllowAny
+from rest_framework_simplejwt.tokens import RefreshToken
 
-class SigninView(APIView):
+
+# Custom SignIn View
+class SignInView(TokenObtainPairView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        serializer = SigninSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# Token Refresh View
+class RefreshTokenView(TokenRefreshView):
+    permission_classes = [AllowAny]
 
-class SignoutView(APIView):
+class SignOutView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
-        request.user.auth_token.delete()
-        logout(request)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Blacklist the refresh token
+            return Response({"detail": "Sign out successful."}, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+# Token Authentication Logic
+    
+# class SigninView(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         serializer = SigninSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.validated_data['user']
+#             token, created = Token.objects.get_or_create(user=user)
+#             return Response({'token': token.key}, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class SignoutView(APIView):
+#     def post(self, request):
+#         request.user.auth_token.delete()
+#         logout(request)
+#         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # Custom Cursor Pagination class
