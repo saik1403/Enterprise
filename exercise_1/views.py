@@ -1,13 +1,14 @@
 # views.py
 from rest_framework import generics, status
 from rest_framework.pagination import CursorPagination
-from exercise_1.models import MyUser
-from .serializers import UserSerializer, SigninSerializer
+from exercise_1.models import MyUser,Country, State, City
+from .serializers import UserSerializer, SigninSerializer, CountrySerializer, StateSerializer, CitySerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import logout
+
 
 class SigninView(APIView):
     permission_classes = [AllowAny]
@@ -49,3 +50,69 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MyUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
+
+
+class GenericPagination(CursorPagination):
+    page_size = 10
+    ordering = 'name' 
+
+class CountryListCreateView(generics.ListCreateAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+    pagination_class = GenericPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(my_user=self.request.user)  
+
+    def perform_create(self, serializer):
+        serializer.save(my_user=self.request.user)  
+
+class CountryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(my_user=self.request.user) 
+    
+class StateListCreateView(generics.ListCreateAPIView):
+    queryset = State.objects.all()
+    serializer_class = StateSerializer
+    pagination_class = GenericPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(country__my_user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save()  
+
+class StateRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = State.objects.all()
+    serializer_class = StateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(country__my_user=self.request.user)
+
+
+class CityListCreateView(generics.ListCreateAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+    pagination_class = GenericPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(my_state__country__my_user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+class CityRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(state__country__my_user=self.request.user)

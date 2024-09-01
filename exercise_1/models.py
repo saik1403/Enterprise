@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email: str, password: str = None, **extra_fields) -> 'MyUser':
@@ -45,9 +46,9 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
 class Country(models.Model):
     id: uuid.UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name: str = models.CharField(max_length=100)
-    country_code: str = models.CharField(max_length=3)
+    country_code: str = models.CharField(max_length=3,unique=True)
     curr_symbol: str = models.CharField(max_length=3)
-    phone_code: str = models.CharField(max_length=5)
+    phone_code: str = models.CharField(max_length=5, unique=True)
     my_user = models.ForeignKey( settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='countries' )
 
     def __str__(self) -> str:
@@ -57,8 +58,11 @@ class State(models.Model):
     id: uuid.UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name: str = models.CharField(max_length=100)
     state_code: str = models.CharField(max_length=10)
-    gst_code: str = models.CharField(max_length=5)
+    gst_code: str = models.CharField(max_length=5, unique=True)
     country: Country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='states')
+
+    class Meta:
+        unique_together = ('country','name')
 
     def __str__(self) -> str:
         return self.name
@@ -67,12 +71,20 @@ class City(models.Model):
     id: uuid.UUID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name: str = models.CharField(max_length=100)
     city_code: str = models.CharField(max_length=10)
-    phone_code: str = models.CharField(max_length=10)
+    phone_code: str = models.CharField(max_length=10, unique=True)
     population: int = models.IntegerField()
     avg_age: float = models.FloatField()
     num_of_adult_males: int = models.IntegerField()
     num_of_adult_females: int = models.IntegerField()
     state: State = models.ForeignKey(State, on_delete=models.CASCADE, related_name='cities')
+
+    class Meta:
+        unique_together = ('state', 'name')
+        unique_together = ('state', 'city_code')
+
+    def clean(self):
+        if self.population < (self.num_of_adult_males + self.num_of_adult_females):
+            raise ValidationError("City population must be greater than the sum of adult males and females.")
 
     def __str__(self) -> str:
         return self.name
